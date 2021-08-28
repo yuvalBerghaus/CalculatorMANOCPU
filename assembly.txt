@@ -180,7 +180,28 @@ FI_MUL, 			LDA	Num 				// FI;
 SENDTODIV,			LDA	Num2
 					SZA					//IF(rightOperand == 0)
 					BSA	DIV_FUNC			//DIV_FUNC();
+PrintResDiv,		LDA	counterDIV			//THEN
+					STA	Res
+					LDA	resMinusFlag
+					ADD Minus1
+					SZA						//if(resMinusFlag == 1)
+					BUN	OutPutResDiv
+					LDA	Res						//THEN
+					CMA
+					INC
+					STA	Res
+					/////////////////////////////////////////////////
+OutPutResDiv,		LDA	Res
+					BSA	putSignedIntt
+					LDA	openParenthesis
+					OUT
+					LDA	remainder
+					STA	Res
+					BSA	putSignedIntt
+					LDA	closedParenthesis
+					OUT
 					HLT
+					////////////////////////////////////////////////
 PRINTDIVZERO,		LDA	STRPTRDIVZERO I		//THEN
 					SZA					//IF StrPtrDivZero == 0
 					BUN	CONTINUESTRDIV0
@@ -188,14 +209,7 @@ PRINTDIVZERO,		LDA	STRPTRDIVZERO I		//THEN
 CONTINUESTRDIV0,	OUT					//THEN
 					ISZ	STRPTRDIVZERO		
 					BUN	PRINTDIVZERO
-PleaseEnterNum,		HEX	0
-startPrinting,		LDA	StrPTRTEMP I
-					SZA					//if (*strptrtemp == 0) {
-					BUN	PrintOutLetter
-					BUN	PleaseEnterNum I
-PrintOutLetter,		OUT					//THEN
-					ISZ	StrPTRTEMP
-					BUN	startPrinting
+
 DIV_FUNC,			HEX	0
 					LDA	Num								//DIV_FUNC() {
 chckMinusFlagR,		BSA	PosOrNeg	
@@ -249,6 +263,8 @@ PosOrNeg,			HEX	0
 					
 
 // main() data 
+openParenthesis,	HEX	28
+closedParenthesis,	HEX	29
 remainder,			DEC 0
 tmpNum,				DEC	0
 counterDIV,			DEC	0
@@ -275,7 +291,7 @@ STEP2,				CLE
 					LDA	Res
 					BSA	putSignedIntt		 	// PutUnsignedIntt(Num); 
 					HLT			 		// 
-putSignedIntt, 		HEX	0		 		// putSignedIntt(short signed int Tnum) { 
+putSignedIntt, 		HEX	0		 		// putSignedIntt(short signed int Tnum) {   will print all the digits of the Result number in ASCII OUTPUT 
 					STA	Tnum 				// 
 					LDA	Power10Ptr 			// 
 					STA	Ptr 				// Ptr = @Power10Array 
