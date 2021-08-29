@@ -20,6 +20,10 @@ Main,				BSA	GetOperator
 					BSA	GetSignedInt
 					STA	Num2			
 					BUN	FI
+					
+					
+					
+					
 GetOperator,		HEX	0			// HERE IT ALL STARTS
 					CLA
 					BSA	In_char
@@ -184,7 +188,9 @@ FI_MUL, 			LDA	Num 				// FI;
 					BUN	PRINTRES
 SENDTODIV,			LDA	Num2
 					SZA					//IF(rightOperand == 0)
-					BSA	DIV_FUNC			//DIV_FUNC();
+					BUN	ELSE1			//DIV_FUNC();
+					BUN PRINTDIVZERO	
+ELSE1,				BSA	DIV_FUNC
 PrintResDiv,		LDA	counterDIV			//THEN
 					STA	Res
 					LDA	resMinusFlag
@@ -243,7 +249,7 @@ positiveResultDiv,	LDA	Num2							//two operands are positive
 					INC	
 					ADD	Num
 					SPA									//if(Num > Num2)
-					BUN	DIV_FUNC I
+					BUN	remainderLeft
 FOR_LOOPDIV1,		LDA	Num2							//THEN
 					CMA
 					INC
@@ -255,8 +261,18 @@ FIDIV,				ADD	Num2							//THEN
 					STA	remainder
 					BUN DIV_FUNC I
 counterPlusDiv,		ISZ	counterDIV
-					BUN	FOR_LOOPDIV1					
-					
+					BUN	FOR_LOOPDIV1	
+remainderLeft,		LDA	minus_flagLeft
+					SZA					//if(minus_flagLeft == 0)
+					BUN	convertRemainder
+					LDA	Num					// THEN
+					STA	remainder
+					BUN	DIV_FUNC I
+convertRemainder,	LDA	Num
+					CMA
+					INC
+					STA	remainder
+					BUN	DIV_FUNC I
 //}
 //This function returns to tmpMSB true (negative number) or false (positive number)
 PosOrNeg,			HEX	0
@@ -371,7 +387,28 @@ forLoopString,		LDA	strTemp I
 prePUTC,			BSA	Putc			
 					ISZ	strTemp
 					BUN	forLoopString
-					
+
+Reset,				HEX	0
+					LDA	Minus
+					STA	ProtoMinus
+					LDA	Plus
+					STA	ProtoPlus
+					LDA	ProtoMul
+					STA	Mul
+					LDA	ProtoDiv
+					STA	Div
+					LDA	zero
+					STA	count
+					STA	digit
+					STA	minus_flagRight
+					STA	minus_flagLeft
+					STA	OperatorFlag
+					STA	flagZero
+					STA	ptr
+					STA	TNum
+					STA	Cc
+					LDA	Reset I
+				
 // putSignedIntt data 
 digit,				DEC 0
 ascii_Offset, 		HEX 30 				// digit to ascii representation offset 
@@ -392,8 +429,8 @@ FlagOff,			DEC  0
 FlagLeftOperand,	DEC  0				//If left operand was assigned
 // GetOperatorData
 TOperator,			DEC  0
-Mul,				HEX 2A
 //ALL OPERATORS
+Mul,				HEX 2A
 minusX,				HEX  -58
 Minus,				HEX  2D
 Plus,				HEX  2B
@@ -403,7 +440,7 @@ ProtoMul,			HEX 2A		// Prototype will reassign */+- to the original.
 ProtoMinus,			HEX  2D
 ProtoPlus,			HEX  2B
 ProtoDiv,			HEX  2F
-
+zero,				DEC	0
 //GetUnsignedInt Data
 TNum,				DEC  0
 Cc,					DEC  0
@@ -431,7 +468,7 @@ Echo,				SKO
 
 //==================DATA OF OPENING SENTENCE
 ORG	300
-Str,			HEX	4F							// 'Op available: +-*/. Input is terminated in a single
+Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 												// line after =. To exit program type X.'
 					HEX	70	
 					HEX	20
