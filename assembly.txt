@@ -8,10 +8,15 @@ PRINTO,				LDA	STRPTROP I
 					ISZ	STRPTROP
 					BUN	OPENING	
 Main,				BSA	GetOperator
-					STA	StrPTRTEMP
+					LDA	StrPTRNum1
+					STA	strTemp
+					BSA	PrintString
 					BSA	GetSignedInt		//
 					STA	Num
 					ISZ	FlagLeftOperand	//Left operand was assigned
+					LDA	StrPTRNum2
+					STA	strTemp
+					BSA	PrintString
 					BSA	GetSignedInt
 					STA	Num2			
 					BUN	FI
@@ -263,6 +268,7 @@ PosOrNeg,			HEX	0
 					
 
 // main() data 
+strTemp,			HEX	0
 openParenthesis,	HEX	28
 closedParenthesis,	HEX	29
 remainder,			DEC 0
@@ -275,6 +281,8 @@ Digits, 			DEC	-16
 resMinusFlag,		DEC	0
 STRPTRDIVZERO,		HEX	500
 StrPTROP, 			HEX	300			//
+StrPTRNum1,			HEX	370
+StrPTRNum2,			HEX	380
 Num,				DEC	0
 Num2,				DEC	0
 Res,				DEC	0
@@ -354,7 +362,16 @@ ConvertResultOfMul,	HEX	0
 					STA	Res
 					BUN	ConvertResultOfMul	I
 
-
+PrintString,		HEX	0
+					STA	strTemp
+forLoopString,		LDA	strTemp I
+					SZA						//if(*strTemp == 0)
+					BUN	PrePUTC
+					BUN	PrintString I						//THEN
+prePUTC,			BSA	Putc			
+					ISZ	strTemp
+					BUN	forLoopString
+					
 // putSignedIntt data 
 digit,				DEC 0
 ascii_Offset, 		HEX 30 				// digit to ascii representation offset 
@@ -412,7 +429,6 @@ Echo,				SKO
 					OUT
 					BUN	Getc I
 
-
 //==================DATA OF OPENING SENTENCE
 ORG	300
 Str,			HEX	4F							// 'Op available: +-*/. Input is terminated in a single
@@ -459,7 +475,23 @@ Str,			HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 					HEX	70
 					HEX	3A
 					DEC	0								// null - end of string = '\0'
+ORG 370
+EnterNum1STR,		HEX	0D
+					HEX	4E
+					HEX	75
+					HEX	6D
+					HEX	31
+					HEX	3A
+					DEC	0
 
+ORG	380
+EnterNum2STR,		HEX	0D
+					HEX	4E
+					HEX	75
+					HEX	6D
+					HEX	32
+					HEX	3A
+					DEC	0
 
 
 ORG 400
@@ -471,8 +503,8 @@ DEC	-10 												// -10 to power of 1
 Putc, 				HEX	0 								// void Putc(char) { 
 Out, 				SKO 
 					BUN	Out 
-OUT 													// print(char); 
-BUN	Putc I 												// } 
+					OUT 													// print(char); 
+					BUN	Putc I 												// } 
 
 //DATA OF ERROR MSG DIVISION BY ZERO!
 ORG 500
