@@ -18,7 +18,7 @@ Main,				BSA	GetOperator
 					STA	strTemp
 					BSA	PrintString
 					BSA	GetSignedInt
-					STA	Num2			
+					STA	Num2	
 					BUN	FI
 					
 					
@@ -187,7 +187,7 @@ BodyMul, 			LDA	Num2 				// DO
 					SZE 					// IF (digit == 1) 
 					BUN	THENMUL			// 
 					BUN	FI_MUL			// 
-					THENMUL, 		LDA	Res 			// THEN result = result + multiplicand; 
+THENMUL, 			LDA	Res 			// THEN result = result + multiplicand; 
 					ADD	Num 				// 
 					STA	Res 				// 
 FI_MUL, 			LDA	Num 				// FI; 
@@ -424,8 +424,20 @@ Reset,				LDA	ProtoMinus
 					LDA	ProtoDiv
 					STA	Div
 					LDA	zero
+					STA	Num
+					STA	resMinusFlag
+					STA	remainderLeft
+					STA	Num2
+					STA	counterDIV
 					STA	count
 					STA	digit
+					STA	tmp
+					STA	tmpNum
+					STA	digitCount
+					STA	operatorFlag
+					STA	FlagLeftOperand
+					STA	flagZero
+					STA	Stripped
 					STA	minus_flagRight
 					STA	minus_flagLeft
 					STA	OperatorFlag
@@ -466,8 +478,8 @@ FlagLeftOperand,	DEC  0				//If left operand was assigned
 // GetOperatorData
 TOperator,			DEC  0
 //ALL OPERATORS
-Mul,				HEX 2A
 minusX,				HEX  -58
+Mul,				HEX 2A
 Minus,				HEX  2D
 Plus,				HEX  2B
 Div,				HEX  2F
