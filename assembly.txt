@@ -110,6 +110,15 @@ getUnsigned,		LDA	Cc
 Convert,			LDA	Cc				// IF Character is not ENTER or Operator
 					ADD	mASCII_zero			//CONVERT TO the real number - 30
 					STA	Cc
+limit0To9,			LDA Cc				//Cc is now an unsigned decimal digit
+					SNA						//if(digit < 0)
+					BUN	ContinueLimit0to9
+					BUN errIsNotDigit
+ContinueLimit0to9,	LDA	Cc						//THEN
+					ADD	minus_nine
+					SPA							//if(digit < 0 OR digit - 9 > 0)
+					BUN	DigitCase			//ELSE digit is fine
+					BUN	errIsNotDigit		//THEN digit Cc is NOT ok (between 0 - 9)
 DigitCase,			LDA	TNum				// The current whole number we have
 					BSA	MultBy10
 					ADD	Cc				// Cc is currently the original next number
@@ -124,8 +133,9 @@ End_loop,			LDA	minus_flagRight
 					STA	TNum
 FI_1,				LDA	TNum
 					BUN	GetSignedInt	I
+//THE CALCULATION OF THE RESULT
 FI,					HEX  0
-SENDTOPLUS,	LDA	Plus
+SENDTOPLUS,			LDA	Plus
 					SZA
 					BUN	SENDTOMINUS
 					LDA	Num
@@ -211,12 +221,12 @@ OutPutResDiv,		LDA	Res
 					BSA	putSignedIntt
 					LDA	closedParenthesis
 					OUT
-					HLT
+					BUN	Reset
 					////////////////////////////////////////////////
 PRINTDIVZERO,		LDA	STRPTRDIVZERO I		//THEN
 					SZA					//IF StrPtrDivZero == 0
 					BUN	CONTINUESTRDIV0
-					HLT					//
+					BUN	Reset					//
 CONTINUESTRDIV0,	OUT					//THEN
 					ISZ	STRPTRDIVZERO		
 					BUN	PRINTDIVZERO
@@ -273,6 +283,16 @@ convertRemainder,	LDA	Num
 					INC
 					STA	remainder
 					BUN	DIV_FUNC I
+					
+errIsNotDigit,		LDA	cReturn
+					OUT
+					LDA	Cc
+					ADD	ascii_Offset
+					OUT
+					LDA	StrNotDigit
+					STA	strTemp
+					BSA	PrintString
+					BUN	Reset////////////////////////////
 //}
 //This function returns to tmpMSB true (negative number) or false (positive number)
 PosOrNeg,			HEX	0
@@ -285,6 +305,7 @@ PosOrNeg,			HEX	0
 
 // main() data 
 strTemp,			HEX	0
+minus_nine,			DEC	-9
 openParenthesis,	HEX	28
 closedParenthesis,	HEX	29
 remainder,			DEC 0
@@ -297,8 +318,14 @@ Digits, 			DEC	-16
 resMinusFlag,		DEC	0
 STRPTRDIVZERO,		HEX	500
 StrPTROP, 			HEX	300			//
+StrNotDigit,		HEX	350
 StrPTRNum1,			HEX	370
-StrPTRNum2,			HEX	380
+StrPTRNum2,		HEX	380
+copySTRPTRDIVZERO,	HEX	500
+copyStrPTROP, 		HEX	300			//
+copyStrNotDigit,	HEX	350
+copyStrPTRNum1,		HEX	370
+copyStrPTRNum2,		HEX	380
 Num,				DEC	0
 Num2,				DEC	0
 Res,				DEC	0
@@ -314,7 +341,7 @@ STEP2,				CLE
 					OUT
 					LDA	Res
 					BSA	putSignedIntt		 	// PutUnsignedIntt(Num); 
-					HLT			 		// 
+					BUN	Reset			 		// 
 putSignedIntt, 		HEX	0		 		// putSignedIntt(short signed int Tnum) {   will print all the digits of the Result number in ASCII OUTPUT 
 					STA	Tnum 				// 
 					LDA	Power10Ptr 			// 
@@ -377,8 +404,8 @@ ConvertResultOfMul,	HEX	0
 					INC
 					STA	Res
 					BUN	ConvertResultOfMul	I
-
-PrintString,		HEX	0
+///PrintString will print any string in address of strTemp
+PrintString,		HEX	0					//PrintString(strTemp);
 					STA	strTemp
 forLoopString,		LDA	strTemp I
 					SZA						//if(*strTemp == 0)
@@ -387,12 +414,11 @@ forLoopString,		LDA	strTemp I
 prePUTC,			BSA	Putc			
 					ISZ	strTemp
 					BUN	forLoopString
-
-Reset,				HEX	0
-					LDA	Minus
-					STA	ProtoMinus
-					LDA	Plus
-					STA	ProtoPlus
+/////////////////////////////////////////
+Reset,				LDA	ProtoMinus
+					STA	Minus
+					LDA	ProtoPlus
+					STA	Plus
 					LDA	ProtoMul
 					STA	Mul
 					LDA	ProtoDiv
@@ -407,7 +433,17 @@ Reset,				HEX	0
 					STA	ptr
 					STA	TNum
 					STA	Cc
-					LDA	Reset I
+					LDA	copySTRPTRDIVZERO
+					STA	STRPTRDIVZERO
+					LDA	copyStrNotDigit
+					STA	StrNotDigit
+					LDA	copyStrPTRNum1
+					STA	StrPTRNum1
+					LDA	copyStrPTRNum2
+					STA	StrPTRNum2
+					LDA	copyStrPTROP
+					STA	StrPTROP
+					BUN	OPENING
 				
 // putSignedIntt data 
 digit,				DEC 0
@@ -446,6 +482,7 @@ TNum,				DEC  0
 Cc,					DEC  0
 mASCII_zero,		HEX  -30
 minusCReturn,		HEX	-D
+cReturn,			HEX	D
 MultBy10,			HEX	0
 					CLE
 					CIL
@@ -512,6 +549,23 @@ Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 					HEX	70
 					HEX	3A
 					DEC	0								// null - end of string = '\0'
+ORG	350				
+CcNotDigitStr,		HEX	20
+					HEX	69
+					HEX	73
+					HEX	20
+					HEX	6E
+					HEX	6F
+					HEX	74
+					HEX	20
+					HEX	61
+					HEX	20
+					HEX	64
+					HEX	69
+					HEX	67
+					HEX	69
+					HEX	74
+					DEC	0
 ORG 370
 EnterNum1STR,		HEX	0D
 					HEX	4E
@@ -529,7 +583,6 @@ EnterNum2STR,		HEX	0D
 					HEX	32
 					HEX	3A
 					DEC	0
-
 
 ORG 400
 Power10Array, 		DEC	-10000 							// -10 to power of 4 
