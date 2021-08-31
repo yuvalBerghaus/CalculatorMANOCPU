@@ -69,9 +69,9 @@ GetSignedInt,		HEX	0
 					ISZ	OperatorFlag		//THEN
 					BUN	In_char
 checkLeftOperand,	LDA	FlagLeftOperand
-					SZA
+					SPA						//if(FlagLeftOperand > 0)
 					BUN	In_char
-					ISZ	minus_flagLeft
+					ISZ	FlagLeftOperand		//THEN minus_flagLeft
 In_char,			HEX	0
 					BSA	Getc
 					STA	Cc
@@ -195,7 +195,6 @@ FI_MUL, 			LDA	Num 				// FI;
 					STA	Num 				// 
 					ISZ	DigitCount 			// DigitCount++; 
 					BUN	Multiply 			// OD; 
-					BUN	PRINTRES
 SENDTODIV,			LDA	Num2
 					SZA					//IF(rightOperand == 0)
 					BUN	ELSE1			//DIV_FUNC();
@@ -313,24 +312,25 @@ tmpNum,				DEC	0
 counterDIV,			DEC	0
 tmpMSB,				DEC	0
 StrPTRTEMP,			HEX	0
+four,				DEC	4
 DigitCount, 		DEC 0 
 Digits, 			DEC	-16 
 resMinusFlag,		DEC	0
-STRPTRDIVZERO,		HEX	500
-StrPTROP, 			HEX	300			//
-StrNotDigit,		HEX	350
-StrPTRNum1,			HEX	370
-StrPTRNum2,		HEX	380
-copySTRPTRDIVZERO,	HEX	500
-copyStrPTROP, 		HEX	300			//
-copyStrNotDigit,	HEX	350
-copyStrPTRNum1,		HEX	370
-copyStrPTRNum2,		HEX	380
+STRPTRDIVZERO,		HEX	600
+StrPTROP, 			HEX	400			//
+StrNotDigit,		HEX	450
+StrPTRNum1,			HEX	470
+StrPTRNum2,		HEX	480
+copySTRPTRDIVZERO,	HEX	600
+copyStrPTROP, 		HEX	400			//
+copyStrNotDigit,	HEX	450
+copyStrPTRNum1,		HEX	470
+copyStrPTRNum2,		HEX	480
 Num,				DEC	0
 Num2,				DEC	0
 Res,				DEC	0
 NumMinus, 			DEC	-32768 				// 
-StrDivBy0,			HEX	500
+StrDivBy0,			HEX	600
 
 PRINTRES,			LDA	Mul
 					SZA					//IF ITS MUL
@@ -426,14 +426,14 @@ Reset,				LDA	ProtoMinus
 					LDA	zero
 					STA	Num
 					STA	resMinusFlag
-					STA	remainderLeft
 					STA	Num2
 					STA	counterDIV
 					STA	count
 					STA	digit
+					STA	strTemp
 					STA	tmp
 					STA	tmpNum
-					STA	digitCount
+					STA	DigitCount
 					STA	operatorFlag
 					STA	FlagLeftOperand
 					STA	flagZero
@@ -443,10 +443,14 @@ Reset,				LDA	ProtoMinus
 					STA	OperatorFlag
 					STA	flagZero
 					STA	ptr
+					STA	Res
 					STA	TNum
 					STA	Cc
+					LDA	four
+					STA	It_count
 					LDA	copySTRPTRDIVZERO
 					STA	STRPTRDIVZERO
+					STA	StrDivBy0
 					LDA	copyStrNotDigit
 					STA	StrNotDigit
 					LDA	copyStrPTRNum1
@@ -455,6 +459,8 @@ Reset,				LDA	ProtoMinus
 					STA	StrPTRNum2
 					LDA	copyStrPTROP
 					STA	StrPTROP
+					CLA
+					CLE
 					BUN	OPENING
 				
 // putSignedIntt data 
@@ -464,7 +470,7 @@ Stripped,			DEC 0 						// +ve value of TNum
 Minus1, 			DEC -1 
 count, 				DEC 0 
 It_count , 			DEC 4 				// loop count (for 16 bit integer) 
-Power10Ptr, 		HEX	400			// @Power10Array 
+Power10Ptr, 		HEX	500			// @Power10Array 
 ptr, 				HEX	0 				// // 
 // GetSignedInt Data
 minusMinusASCII, 	HEX -2D
@@ -516,7 +522,7 @@ Echo,				SKO
 					BUN	Getc I
 
 //==================DATA OF OPENING SENTENCE
-ORG	300
+ORG	400
 Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 												// line after =. To exit program type X.'
 					HEX	70	
@@ -561,7 +567,7 @@ Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 					HEX	70
 					HEX	3A
 					DEC	0								// null - end of string = '\0'
-ORG	350				
+ORG	450				
 CcNotDigitStr,		HEX	20
 					HEX	69
 					HEX	73
@@ -578,7 +584,7 @@ CcNotDigitStr,		HEX	20
 					HEX	69
 					HEX	74
 					DEC	0
-ORG 370
+ORG 470
 EnterNum1STR,		HEX	0D
 					HEX	4E
 					HEX	75
@@ -587,7 +593,7 @@ EnterNum1STR,		HEX	0D
 					HEX	3A
 					DEC	0
 
-ORG	380
+ORG	480
 EnterNum2STR,		HEX	0D
 					HEX	4E
 					HEX	75
@@ -596,7 +602,7 @@ EnterNum2STR,		HEX	0D
 					HEX	3A
 					DEC	0
 
-ORG 400
+ORG 500
 Power10Array, 		DEC	-10000 							// -10 to power of 4 
 DEC	-1000 												// -10 to power of 3 
 DEC	-100 												// -10 to power of 2 
@@ -609,7 +615,7 @@ Out, 				SKO
 					BUN	Putc I 												// } 
 
 //DATA OF ERROR MSG DIVISION BY ZERO!
-ORG 500
+ORG 600
 errorDivZero,		HEX	45
 					HEX	52
 					HEX	52
