@@ -24,7 +24,7 @@ Main,				BSA	GetOperator
 					
 					
 					
-GetOperator,		HEX	0			// HERE IT ALL STARTS
+GetOperator,		HEX	0			// 
 					CLA
 					BSA	In_char
 CheckMul,			CMA				// IF One of the operators == zero then
@@ -32,7 +32,7 @@ CheckMul,			CMA				// IF One of the operators == zero then
 					ADD	Mul
 					SZA
 					BUN	CheckPlus
-					STA	Mul
+isMul,				STA	Mul
 					BUN	GetOperator I
 CheckPlus,			LDA	TOperator
 					CMA
@@ -40,7 +40,7 @@ CheckPlus,			LDA	TOperator
 					ADD	Plus
 					SZA
 					BUN	CheckMinus
-					STA	Plus
+isPlus,				STA	Plus
 					BUN	GetOperator I
 CheckMinus,			LDA	TOperator
 					CMA
@@ -48,16 +48,20 @@ CheckMinus,			LDA	TOperator
 					ADD	Minus
 					SZA
 					BUN	CheckDiv
-					STA	Minus
+isMinus,			STA	Minus
 					BUN	GetOperator I
 CheckDiv,			LDA	TOperator
 					CMA
 					INC
 					ADD	Div
 					SZA
-					BUN	FI
-					STA	Div
+					BUN	errIsNotOp
+isDiv,				STA	Div
 					BUN	GetOperator I
+errIsNotOp,			LDA	StrNotOp
+					STA	strTemp
+					BSA	PrintString
+					BUN Reset
 GetSignedInt,		HEX	0			
 					CLA
 					STA	TNum
@@ -318,6 +322,7 @@ Digits, 			DEC	-16
 resMinusFlag,		DEC	0
 STRPTRDIVZERO,		HEX	600
 StrPTROP, 			HEX	400			//
+StrNotOp,			HEX	430
 StrNotDigit,		HEX	450
 StrPTRNum1,			HEX	470
 StrPTRNum2,		HEX	480
@@ -327,7 +332,7 @@ copyStrNotDigit,	HEX	450
 copyStrPTRNum1,		HEX	470
 copyStrPTRNum2,		HEX	480
 Num,				DEC	0
-Num2,				DEC	0
+Num2,				DEC	1
 Res,				DEC	0
 NumMinus, 			DEC	-32768 				// 
 StrDivBy0,			HEX	600
@@ -523,7 +528,8 @@ Echo,				SKO
 
 //==================DATA OF OPENING SENTENCE
 ORG	400
-Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
+Str,				HEX	0D
+					HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 												// line after =. To exit program type X.'
 					HEX	70	
 					HEX	20
@@ -567,6 +573,27 @@ Str,				HEX	4F							// 'Op available: +-*/. Input is terminated in a single
 					HEX	70
 					HEX	3A
 					DEC	0								// null - end of string = '\0'
+ORG 430
+CcNotDigitOp,		HEX	20
+					HEX	69
+					HEX	73
+					HEX	20
+					HEX	6E
+					HEX	6F
+					HEX	74
+					HEX	20
+					HEX	61
+					HEX	6E
+					HEX	20
+					HEX	6F
+					HEX	70
+					HEX	65
+					HEX	72
+					HEX	61
+					HEX	74
+					HEX	6F
+					HEX	72
+					DEC	0
 ORG	450				
 CcNotDigitStr,		HEX	20
 					HEX	69
