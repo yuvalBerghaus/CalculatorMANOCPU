@@ -1,12 +1,15 @@
 //============OPENING SENTENCE
-OPENING,			LDA	StrPTROP I
-					SZA
-					BUN	PRINTO
+					LDA	firstTime
+					SZA						//if(firstTime == 0)
+					BUN	NotFirstTime
+OPENING,			LDA	StrPTROP			//THEN
+					BSA	PrintString
 					BUN	Main
-PRINTO,				LDA	STRPTROP I
-					OUT
-					ISZ	STRPTROP
-					BUN	OPENING	
+					//SZA
+					//BUN	PRINTO
+					//BUN	Main				
+NotFirstTime,		LDA	StrOpInput
+					BSA	PrintString
 Main,				BSA	GetOperator
 					LDA	StrPTRNum1
 					STA	strTemp
@@ -58,8 +61,11 @@ CheckDiv,			LDA	TOperator
 					BUN	errIsNotOp
 isDiv,				STA	Div
 					BUN	GetOperator I
-errIsNotOp,			LDA	StrNotOp
-					STA	strTemp
+errIsNotOp,			LDA	cReturn
+					OUT
+					LDA	Cc
+					OUT
+					LDA	StrNotOp
 					BSA	PrintString
 					BUN Reset
 GetSignedInt,		HEX	0			
@@ -315,6 +321,7 @@ remainder,			DEC 0
 tmpNum,				DEC	0
 counterDIV,			DEC	0
 tmpMSB,				DEC	0
+firstTime,			DEC	0
 StrPTRTEMP,			HEX	0
 four,				DEC	4
 DigitCount, 		DEC 0 
@@ -323,9 +330,11 @@ resMinusFlag,		DEC	0
 STRPTRDIVZERO,		HEX	600
 StrPTROP, 			HEX	400			//
 StrNotOp,			HEX	430
+StrOpInput,			HEX	325
 StrNotDigit,		HEX	450
 StrPTRNum1,			HEX	470
-StrPTRNum2,		HEX	480
+StrPTRNum2,			HEX	480
+copyStrOpInput,		HEX	325
 copySTRPTRDIVZERO,	HEX	600
 copyStrPTROP, 		HEX	400			//
 copyStrNotDigit,	HEX	450
@@ -453,6 +462,8 @@ Reset,				LDA	ProtoMinus
 					STA	Cc
 					LDA	four
 					STA	It_count
+					LDA	copyStrOpInput
+					STA	StrOpInput
 					LDA	copySTRPTRDIVZERO
 					STA	STRPTRDIVZERO
 					STA	StrDivBy0
@@ -466,7 +477,7 @@ Reset,				LDA	ProtoMinus
 					STA	StrPTROP
 					CLA
 					CLE
-					BUN	OPENING
+					BUN	NotFirstTime
 				
 // putSignedIntt data 
 digit,				DEC 0
@@ -573,8 +584,14 @@ Str,				HEX	0D
 					HEX	70
 					HEX	3A
 					DEC	0								// null - end of string = '\0'
+ORG 325
+OpInput,			HEX	D
+					HEX	4F
+					HEX	70
+					HEX	3A
+					DEC	0
 ORG 430
-CcNotDigitOp,		HEX	20
+CcNotOp,			HEX	20
 					HEX	69
 					HEX	73
 					HEX	20
