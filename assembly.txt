@@ -1,6 +1,4 @@
-				LDA	firstTime
-				SZA			/if(firstTime == 0)
-				BUN	NotFirstTime
+	
 //OPENING SENTENCE
 OPENING,			LDA	StrPTROP			//THEN
 				BSA	PrintString
@@ -214,6 +212,8 @@ OutPutResDiv,			LDA	Res
 				BSA	putSignedIntt
 				LDA	openParenthesis
 				OUT
+				CLA
+				STA	flagZero
 				LDA	remainder
 				STA	Res
 				BSA	putSignedIntt
@@ -230,7 +230,7 @@ CONTINUESTRDIV0,		OUT					//THEN
 DIV_FUNC,			HEX	0				//DIV_FUNC() {
 				LDA	Num							
 chckMinusFlagR,		BSA	PosOrNeg	
-				STA minus_flagLeft				
+				STA	 minus_flagLeft				
 checkMinusFlagL,		LDA	Num2						
 				BSA	PosOrNeg
 				STA	minus_flagRight		
@@ -393,13 +393,16 @@ Continue, 			STA	Stripped 			// Stripped=Stripped - *Ptr;
 				ISZ	digit 				// digit++; 
 				BUN	Loop 				// OD; 
 Outx,				LDA	digit
-				SZA					//if digit == 0
-				BUN	printDigit
-checkFlagZero,			LDA	flagZero	 		// THEN
-				SZA				//If flagZero == 0 && digit==0
-addIT,				ISZ	flagZero
-addIT2,				BUN	gotoNextDigit			//THEN			
-printDigit,			ADD	ascii_Offset		 	// 
+				SZA					//if(digit==0)
+				BUN	printDigit			//else
+checkFlagZero,			LDA	flagZero			//THEN
+				SZA					//if(flagZero==0)
+prePrintDigit,			BUN	COUNTERIT			//else flagZero++
+BUN	gotoNextDigit			//then gotoNextDigit
+COUNTERIT,			ISZ	flagZero
+printDigit,			ISZ	flagZero
+LDA	digit
+ADD	ascii_Offset		 	// 
 				BSA	Putc			 	// 
 gotoNextDigit,			ISZ	ptr 				// ptr++; 
 				LDA	count				// Count--; 
